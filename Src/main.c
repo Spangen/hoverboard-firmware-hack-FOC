@@ -84,6 +84,8 @@ extern uint8_t enable;                  // global variable for motor enable
 
 extern int16_t batVoltage;              // global variable for battery voltage
 
+extern int32_t iOdomL,	iOdomR;		//ROBO defined and updated in bldc.c	// nANO
+
 #if defined(SIDEBOARD_SERIAL_USART2)
 extern SerialSideboard Sideboard_L;
 #endif
@@ -496,12 +498,14 @@ int main(void) {
         // Feedback.speedR_meas	  = (int16_t)rtY_Right.n_mot;
         // Feedback.speedL_meas	  = (int16_t)rtY_Left.n_mot;
           // printf("in1:%i in2:%i cmdL:%i cmdR:%i BatADC:%i BatV:%i TempADC:%i Temp:%i \r\n",
-          printf("1:%5i 2:%5i L:%5i R:%5i Spd:%4i A: %5i %5i %5i BatADC:%i BatV:%i TempADC:%i Temp:%i \r\n",
+          printf("Odo: %5ld %5ld Inp:%5i %5i OutLR: %5i %5i Spd:%4i A: %5i %5i %5i BA:%i BV:%i TA:%i TC:%i \r\n",
+            -iOdomL,                  //
+            iOdomR,                   //
             input1[inIdx].raw,        // 1: INPUT1
             input2[inIdx].raw,        // 2: INPUT2
             cmdL,                     // 3: output command: [-1000, 1000]
             cmdR,                     // 4: output command: [-1000, 1000]
-            speedAvgAbs,          // 8: Average measured speed in absolute
+            speedAvgAbs,              // 8: Average measured speed in absolute
             dc_curr,                  // 5: Total DC Link Current * 100
             left_dc_curr,             // 6: Left DC Link Current * 100
             right_dc_curr,            // 7: Right DC Link Current * 100

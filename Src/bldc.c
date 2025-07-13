@@ -53,6 +53,27 @@ static int16_t curDC_max = (I_DC_MAX * A2BIT_CONV);
 int16_t curL_phaA = 0, curL_phaB = 0, curL_DC = 0;
 int16_t curR_phaB = 0, curR_phaC = 0, curR_DC = 0;
 
+// nANO begin
+//------------------------------------------------------------------------  
+// Global variables for Odometry on motors
+// from RoboDurden 
+// https://github.com/RoboDurden/hoverboard-firmware-hack-FOC
+//------------------------------------------------------------------------
+int32_t iOdomL = 0;
+int32_t iOdomR = 0;
+static int16_t iWheelPosLastL = 0;
+static int16_t iWheelPosLastR = 0;
+int16_t modulo(int16_t m, int16_t rest_classes)
+{
+  return (((m % rest_classes) + rest_classes) %rest_classes);
+}
+int16_t up_or_down(int16_t vorher, int16_t nachher)
+{
+  uint16_t up_down[6] = {0,-1,-2,0,2,1};
+  return up_down[modulo(vorher-nachher, 6)];
+}
+// nANO end
+
 volatile int pwml = 0;
 volatile int pwmr = 0;
 
@@ -200,6 +221,13 @@ void DMA1_Channel1_IRQHandler(void) {
   // motSpeedLeft = rtY_Left.n_mot;
   // motAngleLeft = rtY_Left.a_elecAngle;
 
+    // nANO begin robo22
+      uint8_t encoding = (uint8_t)((hall_ul<<2) + (hall_vl<<1) + hall_wl);
+      int16_t iWheelPos = rtConstP.vec_hallToPos_Value[encoding];
+      iOdomL = iOdomL - up_or_down(iWheelPosLastL, iWheelPos); // int32 will overflow at +-2.147.483.648
+      iWheelPosLastL = iWheelPos;
+    // nANO end
+
     /* Apply commands */
     LEFT_TIM->LEFT_TIM_U    = (uint16_t)CLAMP(ul + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
     LEFT_TIM->LEFT_TIM_V    = (uint16_t)CLAMP(vl + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
@@ -237,6 +265,13 @@ void DMA1_Channel1_IRQHandler(void) {
  // errCodeRight  = rtY_Right.z_errCode;
  // motSpeedRight = rtY_Right.n_mot;
  // motAngleRight = rtY_Right.a_elecAngle;
+
+    //nANO begin robo22
+      encoding = (uint8_t)((hall_ur<<2) + (hall_vr<<1) + hall_wr);
+      iWheelPos = rtConstP.vec_hallToPos_Value[encoding];
+      iOdomR = iOdomR - up_or_down(iWheelPosLastR, iWheelPos); // int32 will overflow at +-2.147.483.648
+      iWheelPosLastR = iWheelPos;
+    //nANO end
 
     /* Apply commands */
     RIGHT_TIM->RIGHT_TIM_U  = (uint16_t)CLAMP(ur + pwm_res / 2, pwm_margin, pwm_res-pwm_margin);
