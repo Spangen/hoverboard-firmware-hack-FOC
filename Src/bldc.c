@@ -67,10 +67,10 @@ int16_t modulo(int16_t m, int16_t rest_classes)
 {
   return (((m % rest_classes) + rest_classes) %rest_classes);
 }
-int16_t up_or_down(int16_t vorher, int16_t nachher)
+int16_t up_or_down(int16_t before, int16_t after)
 {
   uint16_t up_down[6] = {0,-1,-2,0,2,1};
-  return up_down[modulo(vorher-nachher, 6)];
+  return up_down[modulo(before-after, 6)];
 }
 // nANO end
 
